@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post New Shipment - Wasl Logistics Platform</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="custom.css">
+
+    <style>
+        :root {
+            --primary: #3a6d88;
+            --secondary: #f0b049;
+            --light-primary: #e8f1f5;
+            --light-secondary: #fef6e9;
+
+            --success: #198754;
+            --warning: #ffc107;
+            --danger: #dc3545;
+
+
+            --dark: #212529;
+            --light: #f8f9fa;
+            --sidebar-width: 250px;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 95px;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(to right, rgb(255 152 0 / 48%), rgb(58 109 136)), url(https://images.unsplash.com/photo-1591488323449-5f7c62bf2ab5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80);
+            color: white;
+            transition: all 0.3s;
+            z-index: 1000;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header .logo {
+            font-weight: 700;
+            font-size: 24px;
+            color: white;
+        }
+
+        .sidebar-menu {
+            padding: 15px 0;
+        }
+
+        .sidebar-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 3px solid white;
+        }
+
+        .sidebar-menu i {
+            margin-right: 10px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .navbar-custom {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 10px 20px;
+            margin-bottom: 20px;
+        }
+
+        .page-header {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        /* Toggle button for mobile */
+        #sidebarToggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .sidebar {
+                margin-left: -var(--sidebar-width);
+            }
+
+            .sidebar.active {
+                margin-left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            #sidebarToggle {
+                display: block;
+            }
+
+            .main-content.active {
+                margin-left: var(--sidebar-width);
+            }
+        }
+
+        .required:after {
+            content: " *";
+            color: var(--danger);
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white p-0 sticky-top shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <img src="logo.png" alt="Wasl Logo">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+<!--                <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>-->
+<!--                <li class="nav-item"><a class="nav-link" href="#">Features</a></li>-->
+<!--                <li class="nav-item"><a class="nav-link" href="#">How It Works</a></li>-->
+<!--                <li class="nav-item"><a class="nav-link" href="browse-shipments.html">Browse Shipments</a></li>-->
+<!--                <li class="nav-item"><a class="nav-link" href="#">Pricing</a></li>-->
+<!--                <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>-->
+            </ul>
+            <div class="ms-lg-3 mt-3 mt-lg-0">
+                <a href="#" class="btn btn-primary">Welcome Company</a>
+                <a href="#" class="btn btn-outline-danger me-2">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <small>Company Dashboard</small>
+    </div>
+    <div class="sidebar-menu">
+        <ul>
+            <li><a href="company-dashboard.html"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+            <li><a href="post-shipment.html" class="active"><i class="bi bi-plus-circle"></i> Post Shipment Request</a></li>
+            <li><a href="#"><i class="bi bi-list-ul"></i> My Shipments</a></li>
+            <li><a href="#"><i class="bi bi-search"></i> Browse Providers</a></li>
+            <li><a href="#"><i class="bi bi-file-text"></i> View Bids</a></li>
+            <li><a href="#"><i class="bi bi-geo-alt"></i> Tracking</a></li>
+            <li><a href="#"><i class="bi bi-person-circle"></i> Company Profile</a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content" id="mainContent">
+    <!-- Top Navigation -->
+    <nav class="navbar-custom">
+        <div class="container-fluid">
+            <button class="btn" id="sidebarToggle">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="user-profile ms-auto">
+                <div class="user-avatar">TS</div>
+                <div>
+                    <div class="fw-bold">TechSolutions Inc.</div>
+                    <small class="text-muted">Company Account</small>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="mb-1">Post New Shipment Request</h4>
+                <p class="text-muted mb-0">Fill out the form below to create a new shipment request</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shipment Form -->
+    <div class="form-card">
+        <form id="shipmentForm">
+            <!-- Goods Information Section -->
+            <div class="form-section">
+                <h5 class="section-title">Goods Information</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="goodsType" class="form-label required">Goods Type</label>
+                        <select class="form-select" id="goodsType" required>
+                            <option value="" selected disabled>Select goods type</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Construction Materials">Construction Materials</option>
+                            <option value="Chemicals">Chemicals</option>
+                            <option value="Textiles">Textiles</option>
+                            <option value="Food & Beverages">Food & Beverages</option>
+                            <option value="Furniture">Furniture</option>
+                            <option value="Machinery">Machinery</option>
+                            <option value="Automotive Parts">Automotive Parts</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="weight" class="form-label required">Weight (kg)</label>
+                        <input type="number" class="form-control" id="weight" min="1" required placeholder="Enter weight in kilograms">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pickup Information Section -->
+            <div class="form-section">
+                <h5 class="section-title">Pickup Information</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="pickupLocation" class="form-label required">Pickup Location</label>
+                        <input type="text" class="form-control" id="pickupLocation" required placeholder="Enter full address">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="pickupCity" class="form-label required">City</label>
+                        <input type="text" class="form-control" id="pickupCity" required placeholder="City">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="pickupRegion" class="form-label required">Region</label>
+                        <select class="form-select" id="pickupRegion" required>
+                            <option value="" selected disabled>Select region</option>
+                            <option value="Riyadh">Riyadh</option>
+                            <option value="Makkah">Makkah</option>
+                            <option value="Madinah">Madinah</option>
+                            <option value="Eastern Province">Eastern Province</option>
+                            <option value="Asir">Asir</option>
+                            <option value="Tabuk">Tabuk</option>
+                            <option value="Hail">Hail</option>
+                            <option value="Northern Borders">Northern Borders</option>
+                            <option value="Jazan">Jazan</option>
+                            <option value="Najran">Najran</option>
+                            <option value="Al Bahah">Al Bahah</option>
+                            <option value="Al Jawf">Al Jawf</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Information Section -->
+            <div class="form-section">
+                <h5 class="section-title">Delivery Information</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="deliveryLocation" class="form-label required">Delivery Location</label>
+                        <input type="text" class="form-control" id="deliveryLocation" required placeholder="Enter full address">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="deliveryCity" class="form-label required">City</label>
+                        <input type="text" class="form-control" id="deliveryCity" required placeholder="City">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="deliveryRegion" class="form-label required">Region</label>
+                        <select class="form-select" id="deliveryRegion" required>
+                            <option value="" selected disabled>Select region</option>
+                            <option value="Riyadh">Riyadh</option>
+                            <option value="Makkah">Makkah</option>
+                            <option value="Madinah">Madinah</option>
+                            <option value="Eastern Province">Eastern Province</option>
+                            <option value="Asir">Asir</option>
+                            <option value="Tabuk">Tabuk</option>
+                            <option value="Hail">Hail</option>
+                            <option value="Northern Borders">Northern Borders</option>
+                            <option value="Jazan">Jazan</option>
+                            <option value="Najran">Najran</option>
+                            <option value="Al Bahah">Al Bahah</option>
+                            <option value="Al Jawf">Al Jawf</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="deliveryDeadline" class="form-label required">Delivery Deadline</label>
+                        <input type="datetime-local" class="form-control" id="deliveryDeadline" required>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Additional Information Section -->
+            <div class="form-section">
+                <h5 class="section-title">Additional Information</h5>
+                <div class="mb-3">
+                    <label for="specialInstructions" class="form-label">Special Instructions</label>
+                    <textarea class="form-control" id="specialInstructions" rows="4" placeholder="Any special handling requirements, packaging details, or other instructions"></textarea>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-between mt-4">
+
+                <div>
+                    <button type="reset" class="btn btn-outline-danger me-2">
+                        <i class="bi bi-arrow-clockwise"></i> Reset Form
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Post Shipment Request
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Sidebar toggle functionality
+    document.getElementById('sidebarToggle').addEventListener('click', function() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('mainContent').classList.toggle('active');
+    });
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('sidebarToggle');
+
+        if (window.innerWidth < 992) {
+            if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target)) {
+                sidebar.classList.remove('active');
+                document.getElementById('mainContent').classList.remove('active');
+            }
+        }
+    });
+
+    // Update active menu item
+    document.querySelectorAll('.sidebar-menu a').forEach(item => {
+        item.addEventListener('click', function() {
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                link.classList.remove('active');
+            });
+            this.classList.add('active');
+
+            // Close sidebar on mobile after selection
+            if (window.innerWidth < 992) {
+                document.getElementById('sidebar').classList.remove('active');
+                document.getElementById('mainContent').classList.remove('active');
+            }
+        });
+    });
+
+    // Provider selection toggle
+    document.querySelectorAll('input[name="providerSelection"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const providerContainer = document.getElementById('providerSelectionContainer');
+            if (this.value === 'specific') {
+                providerContainer.style.display = 'block';
+                document.getElementById('preferredProvider').required = true;
+            } else {
+                providerContainer.style.display = 'none';
+                document.getElementById('preferredProvider').required = false;
+            }
+        });
+    });
+
+    // Form submission
+    document.getElementById('shipmentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Form validation
+        if (!this.checkValidity()) {
+            e.stopPropagation();
+            this.classList.add('was-validated');
+            return;
+        }
+
+        // Collect form data
+        const formData = {
+            goodsType: document.getElementById('goodsType').value,
+            weight: document.getElementById('weight').value,
+            pickupLocation: document.getElementById('pickupLocation').value,
+            pickupCity: document.getElementById('pickupCity').value,
+            pickupRegion: document.getElementById('pickupRegion').value,
+            deliveryLocation: document.getElementById('deliveryLocation').value,
+            deliveryCity: document.getElementById('deliveryCity').value,
+            deliveryRegion: document.getElementById('deliveryRegion').value,
+            deliveryDeadline: document.getElementById('deliveryDeadline').value,
+            providerSelection: document.querySelector('input[name="providerSelection"]:checked').value,
+            preferredProvider: document.getElementById('preferredProvider').value,
+            specialInstructions: document.getElementById('specialInstructions').value
+        };
+
+        // In a real application, you would send this data to your backend
+        console.log('Form submitted with data:', formData);
+
+        // Show success message and redirect
+        alert('Shipment request posted successfully!');
+        window.location.href = 'company-dashboard.html';
+    });
+
+    // Save as draft functionality
+    document.getElementById('saveDraftBtn').addEventListener('click', function() {
+        // Collect form data
+        const formData = {
+            goodsType: document.getElementById('goodsType').value,
+            weight: document.getElementById('weight').value,
+            pickupLocation: document.getElementById('pickupLocation').value,
+            pickupCity: document.getElementById('pickupCity').value,
+            pickupRegion: document.getElementById('pickupRegion').value,
+            deliveryLocation: document.getElementById('deliveryLocation').value,
+            deliveryCity: document.getElementById('deliveryCity').value,
+            deliveryRegion: document.getElementById('deliveryRegion').value,
+            deliveryDeadline: document.getElementById('deliveryDeadline').value,
+            providerSelection: document.querySelector('input[name="providerSelection"]:checked').value,
+            preferredProvider: document.getElementById('preferredProvider').value,
+            specialInstructions: document.getElementById('specialInstructions').value
+        };
+
+        // In a real application, you would send this data to your backend
+        console.log('Draft saved with data:', formData);
+
+        // Show success message
+        alert('Draft saved successfully!');
+    });
+
+    // Set minimum date for delivery deadline to today
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const minDate = tomorrow.toISOString().slice(0, 16);
+    document.getElementById('deliveryDeadline').min = minDate;
+</script>
+</body>
+
+</html>
