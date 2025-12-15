@@ -1,0 +1,350 @@
+﻿@model Wasl.ViewModels.ShipmentVMs.ShipmentDetailsViewModel
+@{
+    ViewData["Title"] = $"Bids for Shipment #{Model.Shipment.ShipmentRequestId} - Wasl Logistics";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box d-flex align-items-center justify-content-between">
+                <h4 class="mb-0">Bids for Shipment #@Model.Shipment.ShipmentRequestId</h4>
+                <div class="page-title-right">
+                    <span class="badge bg-info">@Model.Bids.Count</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shipment Summary -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="card-title mb-3">Shipment Details</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <th width="40%">Goods Type:</th>
+                                    <td>@Model.Shipment.GoodsType</td>
+                                </tr>
+                                <tr>
+                                    <th>Weight:</th>
+                                    <td>@Model.Shipment.WeightKg kg</td>
+                                </tr>
+                                <tr>
+                                    <th>Pickup Location:</th>
+                                    <td>@Model.Shipment.PickupCity, @Model.Shipment.PickupRegion</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <th width="40%">Delivery Location:</th>
+                                    <td>@Model.Shipment.DeliveryCity, @Model.Shipment.DeliveryRegion</td>
+                                </tr>
+                                <tr>
+                                    <th>Delivery Deadline:</th>
+                                    <td>@Model.Shipment.DeliveryDeadline?.ToString("MMM dd, yyyy")</td>
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        @{
+                                            var statusColor = Wasl.Infrastructure.StatusHelper.GetShipmentStatusColor(Model.Shipment.Status);
+                                        }
+                                        <span class="badge bg-@statusColor">
+                                            @Model.Shipment.Status
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center border-start">
+                    <div class="mb-3">
+                        <h3 class="text-primary mb-1">@Model.Bids.Count</h3>
+                        <small class="text-muted">Total Bids Received</small>
+                    </div>
+                    @if (Model.Bids.Any())
+                    {
+                        <div class="mb-3">
+                            <h5 class="text-success mb-1">SAR @Model.Bids.Min(b => b.BidPrice ?? 0).ToString("N2")</h5>
+                            <small class="text-muted">Lowest Bid</small>
+                        </div>
+                        <div>
+                            <h5 class="text-info mb-1">@Model.Bids.Min(b => b.EstimatedDeliveryDays ?? 0) days</h5>
+                            <small class="text-muted">Fastest Delivery</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            @if (Model.Bids.Any())
+            {
+                <!-- Bids Comparison -->
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-trophy text-warning me-2"></i>
+                            Compare Bids (@Model.Bids.Count received)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var bid in Model.Bids)
+                            {
+                                var minBid = Model.Bids.Min(b => b.BidPrice ?? 0);
+                                var minDays = Model.Bids.Min(b => b.EstimatedDeliveryDays ?? 0);
+                                var isLowestPrice = bid.BidPrice == minBid;
+
+                                <div class="col-xl-4 col-md-6 mb-4">
+                                    <div class="card p-0 bid-card h-100 @(isLowestPrice ? "border-success" : "")">
+                                        <div class="card-body">
+                                            <!-- Provider Header -->
+                                            <div class="d-flex align-items-start mb-3">
+                                                <div class="flex-shrink-0">
+                                                    <div class="avatar-lg bg-light-primary rounded-circle d-flex align-items-center justify-content-center">
+                                                        <i class="bi bi-truck-front font-20 text-primary"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h6 class="mb-1">@bid.Provider?.ProviderName</h6>
+                                                    <p class="text-muted mb-1 small">
+                                                        <i class="bi bi-geo-alt"></i>
+                                                        @bid.Provider?.ProviderCity
+                                                    </p>
+                                                    <!-- Provider Rating -->
+                                                    @{
+                                                        var avgRating = bid.Provider?.Feedbacks?.Average(f => f.Rating ?? 0) ?? 0;
+                                                        var ratingCount = bid.Provider?.Feedbacks?.Count ?? 0;
+                                                    }
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="star-rating small me-2">
+                                                            @for (int i = 1; i <= 5; i++)
+                                                            {
+                                                                <i class="bi bi-star@(i <= avgRating ? "-fill" : "") text-warning"></i>
+                                                            }
+                                                        </div>
+                                                        <small class="text-muted">(@ratingCount)</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Bid Details -->
+                                            <div class="bid-details">
+                                                <div class="text-center mb-3">
+                                                    <h4 class="text-success mb-1">SAR @bid.BidPrice?.ToString("N2")</h4>
+                                                    <small class="text-muted">Total Price</small>
+                                                </div>
+
+                                                <div class="row text-center mb-3">
+                                                    <div class="col-6">
+                                                        <div class="border-end">
+                                                            <h6 class="mb-0 text-primary">@bid.EstimatedDeliveryDays</h6>
+                                                            <small class="text-muted">Delivery Days</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <h6 class="mb-0 text-info">@(bid.Provider?.Contracts?.Count ?? 0)</h6>
+                                                        <small class="text-muted">Projects</small>
+                                                    </div>
+                                                </div>
+
+                                                @if (!string.IsNullOrEmpty(bid.BidNotes))
+                                                {
+                                                    <div class="mb-3">
+                                                        <h6 class="border-bottom pb-1 small">Provider Notes</h6>
+                                                        <p class="small text-muted mb-0">
+                                                            @(bid.BidNotes.Length > 100 ? bid.BidNotes.Substring(0, 100) + "..." : bid.BidNotes)
+                                                        </p>
+                                                    </div>
+                                                }
+
+                                                <!-- Best Offer Badge -->
+                                                @if (isLowestPrice)
+                                                {
+                                                    <div class="text-center mb-3">
+                                                        <span class="badge bg-success">
+                                                            <i class="bi bi-trophy me-1"></i> Lowest Price
+                                                        </span>
+                                                    </div>
+                                                }
+
+                                                @if (bid.EstimatedDeliveryDays == minDays)
+                                                {
+                                                    <div class="text-center mb-3">
+                                                        <span class="badge bg-info">
+                                                            <i class="bi bi-lightning me-1"></i> Fastest Delivery
+                                                        </span>
+                                                    </div>
+                                                }
+                                            </div>
+
+                                            <!-- Actions -->
+                                            <div class="d-grid gap-2">
+                                                <a asp-controller="CompanyBid" asp-action="Show" asp-route-id="@bid.BidId"
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-eye"></i> View Details
+                                                </a>
+
+                                                @if (bid.BidStatus == Wasl.Infrastructure.AppConstants.BID_SUBMITTED)
+                                                {
+                                                    <div class="btn-group">
+                                                        <form method="post" asp-controller="CompanyBid" asp-action="Accept"
+                                                              asp-route-id="@bid.BidId" class="d-inline" style="flex: 1;">
+                                                            @Html.AntiForgeryToken()
+                                                            <button type="submit" class="btn btn-success btn-sm w-100"
+                                                                    onclick="return confirm('Are you sure you want to accept this bid? This will create a contract and reject other bids.')">
+                                                                <i class="bi bi-check-lg"></i> Accept
+                                                            </button>
+                                                        </form>
+                                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#rejectModal@(bid.BidId)">
+                                                            <i class="bi bi-x-lg"></i>
+                                                        </button>
+                                                    </div>
+                                                }
+                                                else if (bid.BidStatus == Wasl.Infrastructure.AppConstants.BID_ACCEPTED)
+                                                {
+                                                    <div class="alert alert-success small mb-0 text-center">
+                                                        <i class="bi bi-check-circle"></i> Accepted
+                                                    </div>
+                                                }
+                                                else if (bid.BidStatus == Wasl.Infrastructure.AppConstants.BID_REJECTED)
+                                                {
+                                                    <div class="alert alert-danger small mb-0 text-center">
+                                                        <i class="bi bi-x-circle"></i> Rejected
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Reject Modal for this bid -->
+                                    <div class="modal fade" id="rejectModal@(bid.BidId)" tabindex="-1">
+                                        <div class="modal-dialog modal-sm">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h6 class="modal-title">Reject Bid?</h6>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form method="post" asp-controller="CompanyBid" asp-action="Reject" asp-route-id="@bid.BidId">
+                                                    @Html.AntiForgeryToken()
+                                                    <div class="modal-body">
+                                                        <p class="small mb-3">Reject bid from @bid.Provider?.ProviderName?</p>
+                                                        <div class="mb-3">
+                                                            <textarea class="form-control form-control-sm" name="rejection_reason"
+                                                              rows="2" placeholder="Reason (optional)"></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- No Bids State -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="empty-state text-center py-5">
+                            <i class="bi bi-file-text display-4 text-muted d-block mb-3"></i>
+                            <h4>No Bids Yet</h4>
+                            <p class="text-muted mb-4">Your shipment hasn't received any bids yet. Providers are reviewing your request.</p>
+
+                            <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6>Tips to attract more bids:</h6>
+                                            <ul class="list-unstyled text-start">
+                                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i> Ensure your shipment details are clear and complete</li>
+                                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i> Consider adjusting the delivery deadline if urgent</li>
+                                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i> Provide clear special instructions if needed</li>
+                                                <li><i class="bi bi-check text-success me-2"></i> The system automatically notifies relevant providers</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <a asp-controller="CompanyShipment" asp-action="Edit" asp-route-id="@Model.Shipment.ShipmentRequestId"
+                                   class="btn btn-warning me-2">
+                                    <i class="bi bi-pencil"></i> Edit Shipment
+                                </a>
+                                <a asp-controller="CompanyProvider" asp-action="Index" class="btn btn-primary">
+                                    <i class="bi bi-search"></i> Browse Providers
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .bid-card {
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+            .bid-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--box-shadow-hover);
+            }
+
+            .bid-card.border-success {
+                border-color: var(--success) !important;
+                background: linear-gradient(135deg, #fff 0%, #f8fff8 100%);
+            }
+
+        .avatar-lg {
+            width: 60px;
+            height: 60px;
+        }
+
+        .star-rating {
+            font-size: 0.9rem;
+        }
+
+            .star-rating.small {
+                font-size: 0.8rem;
+            }
+
+        .bid-details {
+            border-top: 1px solid #eef2f7;
+            border-bottom: 1px solid #eef2f7;
+            padding: 1rem 0;
+            margin: 1rem 0;
+        }
+
+        .border-end:last-child {
+            border-right: none !important;
+        }
+
+        .empty-state {
+            padding: 2rem 1rem;
+        }
+    </style>
+}

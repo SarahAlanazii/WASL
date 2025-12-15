@@ -1,0 +1,118 @@
+﻿@model List<Wasl.Models.Feedback>
+@{
+    ViewData["Title"] = "Reviews & Ratings - Wasl Logistics";
+    var averageRating = ViewBag.AverageRating ?? 0.0;
+    var totalReviews = ViewBag.TotalReviews ?? 0;
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            @* @await Component.InvokeAsync("ProviderSidebar") *@
+            <partial name="_ProviderSidebar" />
+        </div>
+
+        <div class="col-lg-9">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-1">Reviews & Ratings</h4>
+                            <p class="text-muted mb-0">View feedback from companies</p>
+                        </div>
+                        <div class="rating-summary text-center">
+                            <div class="display-6 fw-bold text-primary mb-1">@averageRating.ToString("N1")</div>
+                            <div class="rating-stars mb-1">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    @if (i <= Math.Floor(averageRating))
+                                    {
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                    }
+                                    else if (i - 0.5 <= averageRating)
+                                    {
+                                        <i class="bi bi-star-half text-warning"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star text-warning"></i>
+                                    }
+                                }
+                            </div>
+                            <small class="text-muted">@totalReviews reviews</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-chat-square-text me-2"></i>Customer Reviews
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        @foreach (var feedback in Model)
+                        {
+                            <div class="review-item border-bottom pb-4 mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>
+                                        <h6 class="mb-1">@feedback.Company?.CompanyName</h6>
+                                        <div class="rating-stars small">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                @if (i <= feedback.Rating)
+                                                {
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-star text-warning"></i>
+                                                }
+                                            }
+                                            <span class="text-muted ms-2">@feedback.Rating.0</span>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">@feedback.FeedbackDate?.ToString("MMM dd, yyyy")</small>
+                                </div>
+                                @if (!string.IsNullOrEmpty(feedback.Comments))
+                                {
+                                    <div class="review-comments">
+                                        <p class="mb-0">@feedback.Comments</p>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-star display-4 text-muted d-block mb-3"></i>
+                            <h5>No Reviews Yet</h5>
+                            <p class="text-muted">Reviews will appear after completed shipments</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .review-item:last-child {
+            border-bottom: none !important;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .review-comments {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+}

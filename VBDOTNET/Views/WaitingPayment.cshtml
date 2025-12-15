@@ -1,0 +1,451 @@
+﻿@model Wasl.ViewModels.CompanyVMs.CompanyContractsViewModel
+ @{
+    ViewData["Title"] = "Contracts Waiting for Payment - Wasl Logistics";
+    var shipments = ViewBag.Shipments as List<Wasl.Models.ShipmentRequest>;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box d-flex align-items-center justify-content-between">
+                <h4 class="mb-0">Contracts Waiting for Payment</h4>
+                <div class="page-title-right">
+                    <span class="badge bg-warning">@Model.Contracts.Count contracts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" asp-action="WaitingPayment">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Filter by Shipment</label>
+                        <select class="form-select" name="shipment_id">
+                            <option value="all">All Shipments</option>
+                            @if (shipments != null)
+                            {
+                                foreach (var shipment in shipments)
+                                {
+                                    <option value="@shipment.ShipmentRequestId"
+                                           selected=" @(Context.Request.Query["shipment_id"] == shipment.ShipmentRequestId.ToString() ? "selected" : "")">
+                                        #@shipment.ShipmentRequestId - @shipment.GoodsType
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                    </div>
+                    <div class="col-md-2">
+                        <a asp-action="WaitingPayment" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-arrow-clockwise"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contracts Grid -->
+    <div class="row">
+        @if (Model.Contracts.Any())
+        {
+            foreach (var contract in Model.Contracts)
+            {
+                <div class="col-xl-4 col-lg-6 mb-4">
+                    <div class="card contract-payment-card h-100">
+                        <!-- Contract Header -->
+                        <div class="card-header bg-transparent border-bottom-0 pb-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title mb-1">Contract #@contract.ContractId</h5>
+                                    <p class="text-success mb-0 small">
+                                        <i class="bi bi-check-circle"></i> Signed by Provider
+                                    </p>
+                                    <p class="text-muted mb-0 small">
+                                        Signed: @contract.SignDate?.ToString("MMM dd, yyyy")
+                                    </p>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                            type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="@Url.Content(contract.ContractDocument)" download>
+                                                <i class="bi bi-download me-2"></i> Download Contract
+                                            </a>
+                                        </li>
+                                        @if (contract.Invoices?.Any() == true)
+                                        {
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="CompanyInvoice" asp-action="Download" 
+                                                   asp-route-id="@contract.Invoices.First().InvoiceId">
+                                                    <i class="bi bi-receipt me-2"></i> Download Invoice
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contract Body -->
+                        <div class="card-body">
+                            <!-- Provider Info -->
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="flex-shrink-0">
+                                    <div class="avatar-md bg-light-primary rounded-circle d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-building font-18 text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">@contract.Provider?.ProviderName</h6>
+                                    <small class="text-muted">@contract.Provider?.ProviderCity</small>
+                                </div>
+                            </div>
+
+                            <!-- Shipment Info -->
+                            <div class="mb-3">
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-box-seam me-2"></i>
+                                    Shipment #@contract.Bid?.ShipmentRequest?.ShipmentRequestId
+                                </h6>
+                                <p class="mb-1 small">@contract.Bid?.ShipmentRequest?.GoodsType</p>
+                                <p class="mb-1 small text-muted">
+                                    <i class="bi bi-geo-alt"></i>
+                                    @contract.Bid?.ShipmentRequest?.PickupCity →
+                                    @contract.Bid?.ShipmentRequest?.DeliveryCity
+                                </p>
+                            </div>
+
+                            <!-- Payment Status -->
+                            <div class="border-top pt-3">
+                                <div class="text-center mb-3">
+                                    <h4 class="text-success mb-1">SAR @((contract.Bid?.BidPrice ?? 0).ToString("N2"))</h4>
+                                    <small class="text-muted">Amount Due</small>
+                                </div>
+                                @if (contract.Invoices?.Any() == true && contract.Invoices.First().Payment != null)
+                                {
+                                    var payment = contract.Invoices.First().Payment;
+                                    var statusColor = Wasl.Infrastructure.StatusHelper.GetPaymentStatusColor(payment.PaymentStatus);
+                                    var statusIcon = Wasl.Infrastructure.StatusHelper.GetPaymentStatusIcon(payment.PaymentStatus);
+                                    <div class="text-center mb-3">
+                                        <span class="badge bg-@statusColor fs-6">
+                                            <i class="bi bi-@statusIcon me-1"></i>
+                                            @payment.PaymentStatus
+                                        </span>
+                                    </div>
+                                    @if (payment.PaymentStatus == Wasl.Infrastructure.AppConstants.PAYMENT_FAILED)
+                                    {
+                                        <div class="alert alert-danger small mb-3">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                            Previous payment attempt failed. Please retry.
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="text-center mb-3">
+                                        <span class="badge bg-secondary fs-6">
+                                            <i class="bi bi-clock me-1"></i>
+                                            Invoice Generating
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Contract Footer -->
+                        <div class="card-footer bg-transparent border-top-0 pt-0">
+                            <div class="d-grid gap-2">
+                                @{
+                                    var hasPayment = contract.Invoices?.Any() == true && contract.Invoices.First().Payment != null;
+                                    var paymentStatus = hasPayment ? contract.Invoices.First().Payment.PaymentStatus : null;
+                                }
+                                @if (!hasPayment || paymentStatus == Wasl.Infrastructure.AppConstants.PAYMENT_FAILED)
+                                {
+                                    <button type="button"
+                                            class="btn btn-primary process-payment-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#paymentModal"
+                                            data-contract-id="@contract.ContractId"
+                                            data-amount="@contract.Bid?.BidPrice">
+                                        <i class="bi bi-credit-card me-2"></i> Process Payment
+                                    </button>
+                                }
+                                else if (paymentStatus == Wasl.Infrastructure.AppConstants.PAYMENT_SUCCESSFUL)
+                                {
+                                    <button class="btn btn-success" disabled>
+                                        <i class="bi bi-check-circle me-2"></i> Payment Completed
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-warning" disabled>
+                                        <i class="bi bi-clock me-2"></i> Payment Processing
+                                    </button>
+                                }
+                                <a asp-controller="CompanyContract" asp-action="Show" asp-route-id="@contract.ContractId"
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-eye me-2"></i> View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="empty-state text-center py-5">
+                            <i class="bi bi-check-circle display-4 text-success d-block mb-3"></i>
+                            <h4>All Payments Processed!</h4>
+                            <p class="text-muted mb-4">No contracts are waiting for payment. All signed contracts have been paid.</p>
+                            <a asp-controller="CompanyContract" asp-action="Index" class="btn btn-primary">
+                                <i class="bi bi-file-text me-2"></i> View All Contracts
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Process Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="paymentForm" method="POST">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div id="paymentModalContent">
+                        <!-- Payment content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="processPaymentBtn">
+                        <i class="bi bi-credit-card me-2"></i> Process Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .contract-payment-card {
+            border-left: 4px solid var(--warning);
+            transition: all 0.3s ease;
+        }
+
+            .contract-payment-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            }
+
+        .avatar-md {
+            width: 50px;
+            height: 50px;
+        }
+
+        .payment-method-option {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            .payment-method-option.selected {
+                border-color: #0d6efd;
+                background-color: #f8f9fa;
+            }
+
+            .payment-method-option:hover {
+                border-color: #adb5bd;
+            }
+
+        .card-input {
+            position: relative;
+        }
+
+            .card-input .card-icon {
+                position: absolute;
+                right: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #6c757d;
+            }
+
+        .empty-state {
+            padding: 3rem 1rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentModal = document.getElementById('paymentModal');
+            const paymentModalContent = document.getElementById('paymentModalContent');
+            const paymentForm = document.getElementById('paymentForm');
+            const processPaymentBtn = document.getElementById('processPaymentBtn');
+
+            // Process Payment Button Handler
+            document.querySelectorAll('.process-payment-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const contractId = this.getAttribute('data-contract-id');
+                    const amount = this.getAttribute('data-amount');
+
+                    paymentForm.action = `/Company/CompanyContract/ProcessPayment?contractId=${contractId}`;
+
+                    paymentModalContent.innerHTML = `
+                        <div class="text-center mb-4">
+                            <h4 class="text-success">SAR ${parseFloat(amount).toFixed(2)}</h4>
+                            <p class="text-muted">Total Amount Due</p>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Payment Method</label>
+                            <div class="payment-method-option selected" data-method="card">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" value="credit_card" id="cardPayment" checked>
+                                    <label class="form-check-label w-100" for="cardPayment">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i class="bi bi-credit-card me-2"></i>
+                                                <strong>Credit/Debit Card</strong>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="cardDetails">
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label class="form-label">Card Number</label>
+                                    <div class="card-input">
+                                        <input type="text" class="form-control" name="card_number"
+                                               placeholder="1234 5678 9012 3456" maxlength="19" required>
+                                        <i class="bi bi-credit-card card-icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Expiry Date</label>
+                                    <input type="text" class="form-control" name="expiry_date"
+                                           placeholder="MM/YY" maxlength="5" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">CVV</label>
+                                    <input type="text" class="form-control" name="cvv"
+                                           placeholder="123" maxlength="3" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Card Holder Name</label>
+                                <input type="text" class="form-control" name="card_holder"
+                                       placeholder="John Doe" required>
+                            </div>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-shield-check"></i>
+                            Your payment information is secure and encrypted.
+                        </div>
+                    `;
+
+                    // Format card number input
+                    setTimeout(() => {
+                        const cardNumberInput = document.querySelector('input[name="card_number"]');
+                        if (cardNumberInput) {
+                            cardNumberInput.addEventListener('input', function(e) {
+                                let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                                let parts = [];
+                                for (let i = 0; i < value.length; i += 4) {
+                                    parts.push(value.substring(i, i + 4));
+                                }
+                                e.target.value = parts.join(' ');
+                            });
+                        }
+
+                        // Format expiry date input
+                        const expiryInput = document.querySelector('input[name="expiry_date"]');
+                        if (expiryInput) {
+                            expiryInput.addEventListener('input', function(e) {
+                                let value = e.target.value.replace(/\D/g, '');
+                                if (value.length >= 2) {
+                                    e.target.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                                }
+                            });
+                        }
+                    }, 100);
+                });
+            });
+
+            // Payment form submission
+            paymentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const submitBtn = processPaymentBtn;
+                const formData = new FormData(this);
+
+                // Disable button and show loading
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Processing...';
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.showSuccessToast(data.message);
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        window.showErrorToast(data.message || 'Payment failed');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="bi bi-credit-card me-2"></i> Process Payment';
+                    }
+                })
+                .catch(error => {
+                    window.showErrorToast('An error occurred while processing payment.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="bi bi-credit-card me-2"></i> Process Payment';
+                });
+            });
+
+            // Reset modal when closed
+            paymentModal.addEventListener('hidden.bs.modal', function () {
+                paymentModalContent.innerHTML = '';
+                paymentForm.reset();
+                processPaymentBtn.disabled = false;
+                processPaymentBtn.innerHTML = '<i class="bi bi-credit-card me-2"></i> Process Payment';
+            });
+        });
+    </script>
+}

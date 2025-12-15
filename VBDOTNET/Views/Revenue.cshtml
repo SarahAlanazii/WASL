@@ -1,0 +1,250 @@
+﻿@model Wasl.ViewModels.AdminVMs.RevenueReportViewModel
+@{
+    ViewData["Title"] = "Revenue Report - Wasl Logistics";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">
+                    <i class="bi bi-graph-up me-2"></i>Revenue & Commission Report
+                </h4>
+                <p class="text-muted mb-0">Financial overview and commission tracking</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-controller="Report" asp-action="Revenue">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-control" name="startDate" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">End Date</label>
+                        <input type="date" class="form-control" name="endDate" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-filter"></i> Generate Report
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Revenue Summary -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="text-white">SAR @Model.RevenueData.TotalRevenue.ToString("N2")</h4>
+                            <p class="mb-0">Total Revenue</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-currency-dollar display-6 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="text-white">SAR @Model.RevenueData.TotalCommission.ToString("N2")</h4>
+                            <p class="mb-0">Platform Commission</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-percent display-6 opacity-50"></i>
+                        </div>
+                    </div>
+                    <small>Rate: @Model.RevenueData.CommissionRate%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="text-white">@Model.RevenueData.TotalContracts</h4>
+                            <p class="mb-0">Total Contracts</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-file-text display-6 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="text-white">SAR @((Model.RevenueData.TotalRevenue - Model.RevenueData.TotalCommission).ToString("N2"))</h4>
+                            <p class="mb-0">Provider Payout</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-cash-coin display-6 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Top Companies -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-trophy me-2"></i>Top Companies by Spending
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.TopCompanies.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Company</th>
+                                        <th>Spending</th>
+                                        <th>Contracts</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var topCompany in Model.TopCompanies)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <small class="fw-bold">@topCompany.Company.CompanyName</small>
+                                            </td>
+                                            <td>
+                                                <small class="text-success">SAR @topCompany.Spending.ToString("N2")</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">@topCompany.ContractsCount</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center mb-0">No data available</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Providers -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-award me-2"></i>Top Providers by Earnings
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.TopProviders.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Provider</th>
+                                        <th>Earnings</th>
+                                        <th>Contracts</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var topProvider in Model.TopProviders)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <small class="fw-bold">@topProvider.Provider.ProviderName</small>
+                                            </td>
+                                            <td>
+                                                <small class="text-success">SAR @topProvider.Earnings.ToString("N2")</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">@topProvider.ContractsCount</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center mb-0">No data available</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Contracts -->
+    <div class="card">
+        <div class="card-header">
+            <h6 class="card-title mb-0">
+                <i class="bi bi-list-check me-2"></i>Recent Contracts (@Model.StartDate.ToString("MMM dd") to @Model.EndDate.ToString("MMM dd"))
+            </h6>
+        </div>
+        <div class="card-body">
+            @if (Model.RevenueData.Contracts.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Contract ID</th>
+                                <th>Company</th>
+                                <th>Provider</th>
+                                <th>Amount</th>
+                                <th>Commission</th>
+                                <th>Signed Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var contract in Model.RevenueData.Contracts.Take(10))
+                            {
+                                <tr>
+                                    <td>#@contract.ContractId</td>
+                                    <td>@contract.Company?.CompanyName</td>
+                                    <td>@contract.Provider?.ProviderName</td>
+                                    <td class="text-success fw-bold">SAR @contract.Bid?.BidPrice?.ToString("N2")</td>
+                                    <td class="text-info">SAR @((contract.Bid?.BidPrice ?? 0) * 0.10m).ToString("N2")</td>
+                                    <td>@contract.SignDate?.ToString("MMM dd, yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <i class="bi bi-file-text display-4 text-muted d-block mb-3"></i>
+                    <h5>No Contracts Found</h5>
+                    <p class="text-muted">No contracts were signed in the selected date range.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

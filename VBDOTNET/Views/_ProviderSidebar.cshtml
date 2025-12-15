@@ -1,0 +1,153 @@
+﻿@model Wasl.Infrastructure.ProviderSidebarViewModel
+
+@if (Model?.Provider != null)
+{
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="profile-avatar mb-3">
+                @if (!string.IsNullOrEmpty(Model.Provider.ProviderName))
+                {
+                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto"
+                         style="width: 100px; height: 100px;">
+                        <span class="text-white fw-bold fs-4">
+                            @Model.Provider.ProviderName.Substring(0, Math.Min(2, Model.Provider.ProviderName.Length))
+                        </span>
+                    </div>
+                }
+            </div>
+            <h5 class="mb-1">@Model.Provider.ProviderName</h5>
+            <p class="text-muted mb-3">@Model.Provider.ProviderCity, @Model.Provider.ProviderRegion</p>
+
+            @if (Model.Stats.AverageRating > 0)
+            {
+                <div class="rating-stars mb-2">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        @if (i <= Math.Floor(Model.Stats.AverageRating))
+                        {
+                            <i class="bi bi-star-fill text-warning"></i>
+                        }
+                        else if (i - 0.5 <= Model.Stats.AverageRating)
+                        {
+                            <i class="bi bi-star-half text-warning"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-star text-warning"></i>
+                        }
+                    }
+                    <span class="text-muted ms-1">(@Model.Stats.TotalReviews)</span>
+                </div>
+            }
+            else
+            {
+                <span class="text-muted">No ratings yet</span>
+            }
+
+            <!-- Stats under rating -->
+            <div class="stats-grid mt-3">
+                <div class="stat-item text-center">
+                    <div class="stat-value text-primary">@Model.Stats.TotalBids</div>
+                    <div class="stat-label text-muted small">Total Bids</div>
+                </div>
+                <div class="stat-item text-center">
+                    <div class="stat-value text-warning">@Model.Stats.ActiveBids</div>
+                    <div class="stat-label text-muted small">Active Bids</div>
+                </div>
+                <div class="stat-item text-center">
+                    <div class="stat-value text-success">@Model.Stats.WonContracts</div>
+                    <div class="stat-label text-muted small">Contracts</div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+                <a asp-controller="ProviderProfile" asp-action="Edit" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil me-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Sidebar -->
+    <div class="card mt-4">
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                <a asp-controller="ProviderProfile" asp-action="Show"
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["action"]?.ToString() == "Show" && ViewContext.RouteData.Values["controller"]?.ToString() == "ProviderProfile" ? "active" : "")">
+                    <i class="bi bi-person me-2"></i>Profile Overview
+                </a>
+                <a asp-controller="ProviderBid" asp-action="Index"
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["controller"]?.ToString() == "ProviderBid" ? "active" : "")">
+                    <i class="bi bi-list-check me-2"></i>My Bids
+                    <span class="badge bg-primary rounded-pill float-end">@Model.Stats.TotalBids</span>
+                </a>
+                <a asp-controller="ProviderRequestResponse" asp-action="Index"
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["controller"]?.ToString() == "ProviderRequestResponse" ? "active" : "")">
+                    <i class="bi bi-envelope me-2"></i>Direct Requests
+                    <span class="badge bg-warning rounded-pill float-end">@Model.Stats.DirectRequests</span>
+                </a>
+                <a asp-controller="ProviderContract" asp-action="Index"
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["controller"]?.ToString() == "ProviderContract" ? "active" : "")">
+                    <i class="bi bi-file-text me-2"></i>Contracts
+                    <span class="badge bg-success rounded-pill float-end">@Model.Stats.WonContracts</span>
+                </a>
+                <a asp-controller="ProviderShipment" asp-action="Index"
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["controller"]?.ToString() == "ProviderShipment" ? "active" : "")">
+                    <i class="bi bi-truck me-2"></i>My Shipments
+                </a>
+                <a asp-controller="ProviderProfile" asp-action="Feedback"
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["action"]?.ToString() == "Feedback" ? "active" : "")">
+                    <i class="bi bi-star me-2"></i>Reviews & Ratings
+                </a>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .profile-avatar img {
+        border: 3px solid #e9ecef;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin: 15px 0;
+    }
+
+    .stat-item {
+        padding: 10px;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+    }
+
+    .rating-stars {
+        font-size: 0.9rem;
+    }
+
+    .list-group-item {
+        border: none;
+        padding: 12px 16px;
+        transition: all 0.3s ease;
+    }
+
+        .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .list-group-item.active {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+</style>

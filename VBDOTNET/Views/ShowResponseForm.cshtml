@@ -1,0 +1,176 @@
+﻿@model Wasl.ViewModels.ProviderVMs.BidResponseViewModel
+@{
+    ViewData["Title"] = "Respond to Request - Wasl Logistics";
+    var request = ViewBag.Request as Wasl.Models.Bid;
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            @* @await Component.InvokeAsync("ProviderSidebar") *@
+            <partial name="_ProviderSidebar" />
+        </div>
+
+        <div class="col-lg-9">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-1">Respond to Direct Request</h4>
+                            <p class="text-muted mb-0">Submit your bid for this shipment request</p>
+                        </div>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="row">
+                <div class="col-md-5 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-info-circle me-2"></i>Request Details
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-item">
+                                <i class="bi bi-building text-primary"></i>
+                                <div>
+                                    <strong>Company</strong>
+                                    <p class="mb-0">@request?.ShipmentRequest?.Company?.CompanyName</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="bi bi-box text-success"></i>
+                                <div>
+                                    <strong>Goods Type</strong>
+                                    <p class="mb-0">@request?.ShipmentRequest?.GoodsType</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="bi bi-arrow-left-right text-info"></i>
+                                <div>
+                                    <strong>Route</strong>
+                                    <p class="mb-0">
+                                        @request?.ShipmentRequest?.PickupCity →
+                                        @request?.ShipmentRequest?.DeliveryCity
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="bi bi-weight text-warning"></i>
+                                <div>
+                                    <strong>Weight</strong>
+                                    <p class="mb-0">@request?.ShipmentRequest?.WeightKg kg</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="bi bi-calendar text-danger"></i>
+                                <div>
+                                    <strong>Delivery Deadline</strong>
+                                    <p class="mb-0">@request?.ShipmentRequest?.DeliveryDeadline?.ToString("MMM dd, yyyy")</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-7 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-pencil me-2"></i>Submit Your Bid
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Provide your pricing and delivery timeline for this shipment request.
+                            </div>
+
+                            <form method="post" asp-action="Respond" asp-route-id="@request?.BidId">
+                                @Html.AntiForgeryToken()
+
+                                <div class="mb-3">
+                                    <label asp-for="BidPrice" class="form-label">Bid Price (SAR) *</label>
+                                    <input asp-for="BidPrice" type="number" step="0.01" class="form-control"
+                                           placeholder="Enter your price" required>
+                                    <span asp-validation-for="BidPrice" class="text-danger"></span>
+                                    <div class="form-text">The amount you will charge for this shipment</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="EstimatedDays" class="form-label">Estimated Delivery Days *</label>
+                                    <input asp-for="EstimatedDays" type="number" class="form-control"
+                                           placeholder="Enter delivery days" required>
+                                    <span asp-validation-for="EstimatedDays" class="text-danger"></span>
+                                    <div class="form-text">Number of days needed to complete delivery</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="BidNotes" class="form-label">Additional Notes (Optional)</label>
+                                    <textarea asp-for="BidNotes" class="form-control" rows="3"
+                                              placeholder="Any additional information, terms, or conditions..."></textarea>
+                                    <span asp-validation-for="BidNotes" class="text-danger"></span>
+                                    <div class="form-text">This will be sent to the company along with your bid</div>
+                                </div>
+
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    <strong>Note:</strong> After submitting your bid, the company will review it and make a decision.
+                                    You cannot modify your bid once submitted.
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="bi bi-check-circle me-2"></i>Submit Bid
+                                    </button>
+                                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+@section Styles {
+    <style>
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+            .info-item:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
+            }
+
+            .info-item i {
+                font-size: 1.2rem;
+                margin-right: 12px;
+                width: 24px;
+                text-align: center;
+            }
+    </style>
+}

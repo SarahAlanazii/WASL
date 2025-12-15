@@ -1,0 +1,268 @@
+﻿@model Wasl.Models.Contract
+@{
+    ViewData["Title"] = "Create Shipment - Wasl Logistics";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            @* @await Component.InvokeAsync("ProviderSidebar") *@
+            <partial name="_ProviderSidebar" />
+        </div>
+
+        <div class="col-lg-9">
+            <!-- Page Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-1">Create New Shipment</h4>
+                            <p class="text-muted mb-0">Initialize shipment tracking for your contract</p>
+                        </div>
+                        <a asp-controller="ProviderContract" asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Contracts
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Contract Information -->
+                <div class="col-md-5 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-file-text me-2"></i>Contract Details
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="contract-summary">
+                                <div class="summary-item">
+                                    <i class="bi bi-hash text-primary"></i>
+                                    <div>
+                                        <small class="text-muted">Contract ID</small>
+                                        <p class="mb-0 fw-bold">#@Model.ContractId</p>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <i class="bi bi-building text-success"></i>
+                                    <div>
+                                        <small class="text-muted">Company</small>
+                                        <p class="mb-0">@Model.Company?.CompanyName</p>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <i class="bi bi-box text-info"></i>
+                                    <div>
+                                        <small class="text-muted">Goods Type</small>
+                                        <p class="mb-0">@Model.Bid?.ShipmentRequest?.GoodsType</p>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <i class="bi bi-arrow-left-right text-warning"></i>
+                                    <div>
+                                        <small class="text-muted">Route</small>
+                                        <p class="mb-0">
+                                            @Model.Bid?.ShipmentRequest?.PickupCity →
+                                            @Model.Bid?.ShipmentRequest?.DeliveryCity
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <i class="bi bi-weight text-danger"></i>
+                                    <div>
+                                        <small class="text-muted">Weight</small>
+                                        <p class="mb-0">@Model.Bid?.ShipmentRequest?.WeightKg kg</p>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <i class="bi bi-currency-dollar text-success"></i>
+                                    <div>
+                                        <small class="text-muted">Bid Amount</small>
+                                        <p class="mb-0 fw-bold text-success">SAR @Model.Bid?.BidPrice?.ToString("N2")</p>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <i class="bi bi-calendar-check text-primary"></i>
+                                    <div>
+                                        <small class="text-muted">Contract Signed</small>
+                                        <p class="mb-0">@Model.SignDate?.ToString("MMM dd, yyyy")</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipment Process Info -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-info-circle me-2"></i>Shipment Process
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="process-steps">
+                                <div class="process-step">
+                                    <div class="step-content">
+                                        <strong>1. Create Shipment</strong>
+                                        <p class="mb-0 small text-muted">Initialize tracking with automatic tracking number</p>
+                                    </div>
+                                </div>
+                                <div class="process-step">
+                                    <div class="step-content">
+                                        <strong>2. Update Status</strong>
+                                        <p class="mb-0 small text-muted">Mark as Received → In Transit → Delivered</p>
+                                    </div>
+                                </div>
+                                <div class="process-step">
+                                    <div class="step-content">
+                                        <strong>3. Automatic Tracking</strong>
+                                        <p class="mb-0 small text-muted">Dates are automatically recorded at each stage</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create Shipment Form -->
+                <div class="col-md-7 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-plus-circle me-2"></i>Initialize Shipment
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="bi bi-lightbulb me-2"></i>
+                                <strong>Quick Start:</strong> Click the button below to create a new shipment.
+                                The system will automatically generate a tracking number and set the initial status to "Received".
+                            </div>
+
+                            <!-- Shipment Preview -->
+                            <div class="shipment-preview mb-4">
+                                <h6 class="text-muted mb-3">What will be created:</h6>
+                                <div class="preview-card border rounded p-3">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <small class="text-muted">Tracking Number</small>
+                                            <p class="mb-2 fw-bold">TRK-@DateTime.Now.ToString("yyyyMMdd")-@Model.ContractId</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Initial Status</small>
+                                            <p class="mb-2">
+                                                <span class="badge bg-primary">Received</span>
+                                            </p>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Start Date</small>
+                                            <p class="mb-2">@DateTime.Now.ToString("MMM dd, yyyy HH:mm")</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Contract</small>
+                                            <p class="mb-2">#@Model.ContractId</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Creation Form -->
+                            <form method="post" asp-controller="ProviderShipment" asp-action="Store" asp-route-contractId="@Model.ContractId">
+                                @Html.AntiForgeryToken()
+
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    <strong>Important:</strong> By creating this shipment, you are confirming that:
+                                    <ul class="mb-0 mt-2">
+                                        <li>You have received the goods for shipping</li>
+                                        <li>You are ready to begin the shipping process</li>
+                                        <li>You will update the shipment status as it progresses</li>
+                                        <li>The tracking number will be automatically generated</li>
+                                    </ul>
+                                </div>
+
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" id="confirm_creation" name="confirm_creation" required>
+                                    <label class="form-check-label" for="confirm_creation">
+                                        I confirm that I have received the goods and am ready to begin the shipping process
+                                    </label>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="bi bi-truck me-2"></i>
+                                        Create Shipment & Start Tracking
+                                    </button>
+                                    <a asp-controller="ProviderContract" asp-action="Index" class="btn btn-outline-secondary">
+                                        Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .contract-summary .summary-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+            .contract-summary .summary-item:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
+            }
+
+            .contract-summary .summary-item i {
+                font-size: 1.2rem;
+                margin-right: 12px;
+                width: 24px;
+                text-align: center;
+            }
+
+        .process-steps .process-step {
+            padding-left: 0 !important;
+            margin-bottom: 20px;
+        }
+
+        .process-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .shipment-preview .preview-card {
+            background-color: #f8f9fa;
+            border-left: 4px solid #28a745 !important;
+        }
+
+        .card-header.bg-primary,
+        .card-header.bg-success {
+            border-bottom: none;
+        }
+
+        .form-check-input:checked {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            font-weight: 600;
+        }
+
+            .btn-success:hover {
+                background: linear-gradient(135deg, #218838 0%, #1ba87e 100%);
+                transform: translateY(-1px);
+            }
+    </style>
+}

@@ -1,0 +1,498 @@
+﻿@model ShipmentDetailsViewModel
+@{
+    ViewData["Title"] = $"{Model.Shipment.GoodsType} - Shipment Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="page-header bg-light py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-12 text-center">
+                <h1 class="display-5 fw-bold mb-3">Shipment Details</h1>
+                <p class="lead text-white">Track and bid on shipments easily with Wasl</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="container py-5">
+    <div class="shipment-header mb-5">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center mb-3">
+                    <h2 class="mb-0 me-3">@Model.Shipment.GoodsType to @Model.Shipment.DeliveryCity</h2>
+                    @{
+                        var statusConfig = Model.Shipment.Status switch
+                        {
+                            "Pending" => new { Class = "bg-primary", Text = "Posted" },
+                            "Bidding" => new { Class = "bg-success", Text = "Bidding Open" },
+                            "Assigned" => new { Class = "bg-warning", Text = "Offer Selected" },
+                            "Accepted" => new { Class = "bg-info", Text = "Accepted" },
+                            "InProgress" => new { Class = "bg-secondary", Text = "In Progress" },
+                            "Delivered" => new { Class = "bg-dark", Text = "Delivered" },
+                            "Cancelled" => new { Class = "bg-danger", Text = "Cancelled" },
+                            _ => new { Class = "bg-secondary", Text = Model.Shipment.Status }
+                        };
+                    }
+                    <span class="badge @statusConfig.Class">@statusConfig.Text</span>
+                </div>
+                <p class="text-muted">
+                    Posted by <strong>@Model.Shipment.Company.CompanyName</strong> •
+                    @((DateTime.Now - Model.Shipment.RequestDate.Value).Days) days ago
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                @if (User.Identity.IsAuthenticated && User.IsInRole(AppConstants.ROLE_PROVIDER) &&
+                                (Model.Shipment.Status == "Pending" || Model.Shipment.Status == "Bidding"))
+                {
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#bidModal">
+                        <i class="bi bi-pencil"></i> Submit Bid
+                    </button>
+                }
+                else if (!User.Identity.IsAuthenticated)
+                {
+                    <a asp-controller="Auth" asp-action="Login" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right"></i> Login to Bid
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="row">
+                <!-- Shipment Image -->
+                <div class="col-md-4">
+                    <div class="detail-card">
+                        <img src="https://icons.veryicon.com/png/o/miscellaneous/color-work-icon/fast-delivery.png"
+                             class="shipment-image-details" alt="@Model.Shipment.GoodsType">
+                    </div>
+                </div>
+
+                <!-- Bids Section -->
+                <div class="col-md-8">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="section-title mb-0">Current Bids</h4>
+                        <span class="badge bg-primary">@Model.Bids.Count Bids</span>
+                    </div>
+
+                    @if (Model.Bids.Any())
+                    {
+                        @foreach (var bid in Model.Bids.OrderBy(b => b.BidPrice))
+                        {
+                            <div class="bid-card @(Model.Bids.OrderBy(b => b.BidPrice).First() == bid ? "bid-highlight" : "")">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <h5 class="mb-0 me-2">SAR @bid.BidPrice?.ToString("N2")</h5>
+                                            @if (Model.Bids.OrderBy(b => b.BidPrice).First() == bid)
+                                            {
+                                                <span class="badge bg-success">Best Offer</span>
+                                            }
+                                        </div>
+                                        <p class="mb-1">
+                                            <strong>@bid.Provider.ProviderName</strong>
+                                        </p>
+                                        <p class="text-muted mb-1">Estimated delivery: @bid.EstimatedDeliveryDays days</p>
+                                        @if (!string.IsNullOrEmpty(bid.BidNotes))
+                                        {
+                                            <p class="mb-0">@bid.BidNotes</p>
+                                        }
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted">Submitted @((DateTime.Now - bid.SubmitDate.Value).Days) days ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="bid-card text-center py-4">
+                            <i class="bi bi-inbox display-4 text-muted d-block mb-3"></i>
+                            <h5>No Bids Yet</h5>
+                            <p class="text-muted mb-0">Be the first to bid on this shipment!</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Shipment Details -->
+                <div class="col-md-12 mt-4">
+                    <div class="detail-card">
+                        <h4 class="section-title">Shipment Details</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <i class="bi bi-box"></i>
+                                    <div>
+                                        <strong>Goods Type</strong>
+                                        <p class="mb-0">@Model.Shipment.GoodsType</p>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="bi bi-speedometer2"></i>
+                                    <div>
+                                        <strong>Weight</strong>
+                                        <p class="mb-0">@Model.Shipment.WeightKg?.ToString("N0") kg</p>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="bi bi-calendar-event"></i>
+                                    <div>
+                                        <strong>Posted Date</strong>
+                                        <p class="mb-0">@Model.Shipment.RequestDate?.ToString("MMM dd, yyyy")</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <i class="bi bi-clock"></i>
+                                    <div>
+                                        <strong>Delivery Deadline</strong>
+                                        <p class="mb-0">
+                                            @Model.Shipment.DeliveryDeadline?.ToString("MMM dd, yyyy")
+                                            (@((Model.Shipment.DeliveryDeadline.Value - DateTime.Now).Days) days left)
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="bi bi-list-check"></i>
+                                    <div>
+                                        <strong>Bidding Status</strong>
+                                        <p class="mb-0">
+                                            @if (Model.Shipment.Status == "Pending" || Model.Shipment.Status == "Bidding")
+                                            {
+                                                <text>@((Model.Shipment.DeliveryDeadline.Value - DateTime.Now).Days) days left</text>
+                                            }
+                                            else
+                                            {
+                                                <text>Bidding Closed</text>
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="bi bi-file-text"></i>
+                                    <div>
+                                        <strong>Special Instructions</strong>
+                                        <p class="mb-0">@(Model.Shipment.SpecialInstructions ?? "No special instructions")</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Route Info -->
+                <div class="col-md-12 mt-4">
+                    <div class="detail-card">
+                        <h4 class="section-title">Route Information</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <i class="bi bi-geo-alt-fill text-danger"></i>
+                                    <div>
+                                        <strong>Pickup Location</strong>
+                                        <p class="mb-0">@Model.Shipment.PickupLocation</p>
+                                        <small class="text-muted">
+                                            @Model.Shipment.PickupCity,
+                                            @(KSALocations.Regions.ContainsKey(Model.Shipment.PickupRegion) ? KSALocations.Regions[Model.Shipment.PickupRegion] : Model.Shipment.PickupRegion)
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <i class="bi bi-geo-alt-fill text-success"></i>
+                                    <div>
+                                        <strong>Delivery Location</strong>
+                                        <p class="mb-0">@Model.Shipment.DeliveryLocation</p>
+                                        <small class="text-muted">
+                                            @Model.Shipment.DeliveryCity,
+                                            @(KSALocations.Regions.ContainsKey(Model.Shipment.DeliveryRegion) ? KSALocations.Regions[Model.Shipment.DeliveryRegion] : Model.Shipment.DeliveryRegion)
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Map -->
+                        <div class="map-container mt-4">
+                            @{
+                                var pickup = Uri.EscapeDataString($"{Model.Shipment.PickupCity}, Saudi Arabia");
+                                var delivery = Uri.EscapeDataString($"{Model.Shipment.DeliveryCity}, Saudi Arabia");
+                                var mapUrl = $"https://www.google.com/maps/embed/v1/directions?key=AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao&origin={pickup}&destination={delivery}&mode=driving";
+                            }
+                            <iframe src="@mapUrl"
+                                    width="100%"
+                                    height="400"
+                                    style="border:0; border-radius: 8px;"
+                                    allowfullscreen
+                                    loading="lazy">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Company Info -->
+                <div class="col-lg-6 mt-4">
+                    <div class="detail-card">
+                        <h4 class="section-title">Company Information</h4>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center"
+                                 style="width: 50px; height: 50px;">
+                                <span class="text-white fw-bold">
+                                    @Model.Shipment.Company.CompanyName.Substring(0, Math.Min(2, Model.Shipment.Company.CompanyName.Length))
+                                </span>
+                            </div>
+                            <div>
+                                <h5 class="mb-0">@Model.Shipment.Company.CompanyName</h5>
+                                <p class="text-muted mb-0">Business</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="bi bi-geo-alt"></i>
+                            <div>
+                                <strong>Address</strong>
+                                <p class="mb-0">
+                                    @Model.Shipment.Company.CompanyAddress,
+                                    @Model.Shipment.Company.CompanyCity,
+                                    @Model.Shipment.Company.CompanyRegion
+                                </p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="bi bi-building"></i>
+                            <div>
+                                <strong>Business Registration</strong>
+                                <p class="mb-0">#@Model.Shipment.Company.BusinessRegistrationNumber</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="bi bi-envelope"></i>
+                            <div>
+                                <strong>Email</strong>
+                                <p class="mb-0">@Model.Shipment.Company.CompanyEmail</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bid Statistics -->
+                <div class="col-lg-6 mt-4">
+                    <div class="detail-card">
+                        <h4 class="section-title">Bid Statistics</h4>
+                        <div class="detail-item">
+                            <i class="bi bi-graph-up"></i>
+                            <div>
+                                <strong>Average Bid</strong>
+                                <p class="mb-0">SAR @Model.BidStats.AverageBid.ToString("N2")</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="bi bi-currency-exchange"></i>
+                            <div>
+                                <strong>Bid Range</strong>
+                                <p class="mb-0">
+                                    SAR @Model.BidStats.MinBid.ToString("N2") -
+                                    SAR @Model.BidStats.MaxBid.ToString("N2")
+                                </p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="bi bi-people"></i>
+                            <div>
+                                <strong>Active Bidders</strong>
+                                <p class="mb-0">@Model.BidStats.ActiveBidders providers</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="bi bi-clock-history"></i>
+                            <div>
+                                <strong>Bidding Ends</strong>
+                                <p class="mb-0">@((Model.Shipment.DeliveryDeadline.Value - DateTime.Now).Days) days from now</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bid Modal -->
+@if (User.Identity.IsAuthenticated && User.IsInRole(AppConstants.ROLE_PROVIDER) &&
+     (Model.Shipment.Status == "Pending" || Model.Shipment.Status == "Bidding"))
+{
+    <div class="modal fade" id="bidModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Submit Bid</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-controller="Provider" asp-action="SubmitBid" method="POST">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ShipmentRequestId" value="@Model.Shipment.ShipmentRequestId">
+
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Bid Amount (SAR)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">SAR</span>
+                                    <input type="number" class="form-control" name="BidPrice"
+                                           placeholder="Enter amount" min="0" step="0.01" required>
+                                </div>
+                                @if (Model.BidStats.MinBid > 0)
+                                {
+                                    <small class="text-muted">
+                                        Current lowest bid: SAR @Model.BidStats.MinBid.ToString("N2")
+                                    </small>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Estimated Delivery Days</label>
+                                <input type="number" class="form-control" name="EstimatedDeliveryDays"
+                                       placeholder="Enter days" min="1" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes (Optional)</label>
+                            <textarea class="form-control" name="BidNotes" rows="3"
+                                  placeholder="Add any additional notes or conditions for your bid..."></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input class="form-check-input" type="checkbox" required>
+                            <label class="form-check-label">
+                                I agree to the <a href="#">terms and conditions</a> of bidding
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit Bid</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@section Styles {
+    <style>
+        .detail-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+            height: 100%;
+        }
+
+        .shipment-image-details {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .bid-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+            .bid-card:hover {
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                transform: translateY(-2px);
+            }
+
+        .bid-highlight {
+            border-left: 4px solid #198754;
+            background: linear-gradient(135deg, #f8fff9 0%, #f0f9f0 100%);
+        }
+
+        .section-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+            .detail-item:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
+            }
+
+            .detail-item i {
+                font-size: 1.2rem;
+                margin-right: 16px;
+                margin-top: 2px;
+                color: #6c757d;
+                min-width: 20px;
+            }
+
+        .provider-badge {
+            background: #fff3cd;
+            color: #856404;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .rating-stars {
+            font-size: 0.9rem;
+        }
+
+        .map-container {
+            border-radius: 8px;
+            overflow: hidden;
+            height: 400px;
+        }
+
+        .shipment-header {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        @@media (max-width: 768px) {
+            .detail-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+                .detail-item i {
+                    margin-bottom: 8px;
+                }
+
+            .bid-card .d-flex {
+                flex-direction: column;
+            }
+
+            .bid-card .text-end {
+                text-align: left !important;
+                margin-top: 12px;
+            }
+        }
+    </style>
+}

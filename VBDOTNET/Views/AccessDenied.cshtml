@@ -1,0 +1,54 @@
+﻿@{
+    ViewData["Title"] = "Access Denied - Wasl";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <div class="access-denied-content py-5">
+                    <i class="bi bi-shield-exclamation text-warning" style="font-size: 5rem;"></i>
+                    <h1 class="display-4 fw-bold mt-4">Access Denied</h1>
+                    <p class="lead text-muted mb-4">
+                        You don't have permission to access this page.
+                    </p>
+                    <p class="text-muted mb-4">
+                        If you believe this is an error, please contact support or check your account permissions.
+                    </p>
+                    <div class="d-flex gap-3 justify-content-center">
+                        <a href="@Url.Action("Index", "Front")" class="btn btn-primary">
+                            <i class="bi bi-house-door me-2"></i>Go Home
+                        </a>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <form asp-controller="Auth" asp-action="Logout" method="POST" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-secondary">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-secondary">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <style>
+        .access-denied-content {
+            background: white;
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+    </style>
+}

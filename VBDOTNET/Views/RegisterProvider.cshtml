@@ -1,0 +1,261 @@
+﻿@model Wasl.ViewModels.Auth.ProviderRegisterViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Provider - Wasl Logistics Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/custom.css">
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <div class="auth-container">
+                    <div class="row g-0">
+                        <div class="col-lg-6">
+                            <div class="auth-form">
+                                <div class="text-center mb-4 d-lg-none">
+                                    <a asp-controller="Home" asp-action="Index" class="logo text-primary">Wasl</a>
+                                    <h3 class="mt-2">Create Provider Account</h3>
+                                </div>
+
+                                <h4 class="mb-4">Register as Logistics Provider</h4>
+
+                                @if (TempData["SuccessMessage"] != null)
+                                {
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        @TempData["SuccessMessage"]
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                }
+
+                                @if (TempData["ErrorMessage"] != null)
+                                {
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        @TempData["ErrorMessage"]
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                }
+
+                                <div class="mb-4 text-center">
+                                    <span class="badge bg-success">Provider Registration</span>
+                                    <div class="mt-2">
+                                        <small>
+                                            Are you a company?
+                                            <a asp-controller="Auth" asp-action="RegisterCompany">Register here</a>
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <form method="post" asp-controller="Auth" asp-action="RegisterProvider">
+                                    @Html.AntiForgeryToken()
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label asp-for="ProviderName" class="form-label">Provider/Company Name *</label>
+                                            <input asp-for="ProviderName" class="form-control"
+                                                   placeholder="Enter provider name" required>
+                                            <span asp-validation-for="ProviderName" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label asp-for="Email" class="form-label">Email Address *</label>
+                                            <div class="input-icon">
+                                                <i class="bi bi-envelope"></i>
+                                                <input asp-for="Email" type="email" class="form-control"
+                                                       autocomplete="new-password"
+                                                       placeholder="Enter your email" required>
+                                            </div>
+                                            <span asp-validation-for="Email" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label asp-for="BusinessRegistrationNumber" class="form-label">Business Registration Number *</label>
+                                            <input asp-for="BusinessRegistrationNumber" class="form-control"
+                                                   placeholder="Enter registration number" required>
+                                            <span asp-validation-for="BusinessRegistrationNumber" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label asp-for="ProviderPhoneNumber" class="form-label">Phone Number *</label>
+                                            <div class="input-icon">
+                                                <i class="bi bi-telephone"></i>
+                                                <input asp-for="ProviderPhoneNumber" type="tel" class="form-control"
+                                                       placeholder="Enter phone number" required>
+                                            </div>
+                                            <span asp-validation-for="ProviderPhoneNumber" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label asp-for="ProviderRegion" class="form-label">Region *</label>
+                                            <select asp-for="ProviderRegion" class="form-select" id="providerRegion" required>
+                                                <option value="" selected disabled>Select region</option>
+                                                @foreach (var region in ViewBag.Regions as Dictionary<string, string>)
+                                                {
+                                                    <option value="@region.Key">@region.Value</option>
+                                                }
+                                            </select>
+                                            <span asp-validation-for="ProviderRegion" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label asp-for="ProviderCity" class="form-label">City *</label>
+                                            <select asp-for="ProviderCity" class="form-select" id="providerCity" required>
+                                                <option value="" selected disabled>Select city</option>
+                                            </select>
+                                            <span asp-validation-for="ProviderCity" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label asp-for="ProviderEmail" class="form-label">Business Email *</label>
+                                            <div class="input-icon">
+                                                <i class="bi bi-envelope"></i>
+                                                <input asp-for="ProviderEmail" type="email" class="form-control"
+                                                       placeholder="Business contact email" required>
+                                            </div>
+                                            <span asp-validation-for="ProviderEmail" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label asp-for="ProviderAddress" class="form-label">Address *</label>
+                                            <textarea asp-for="ProviderAddress" class="form-control" rows="2"
+                                                      placeholder="Enter your business address" required></textarea>
+                                            <span asp-validation-for="ProviderAddress" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="col-12 mb-3">
+                                            <label asp-for="ServiceDescription" class="form-label">Service Description *</label>
+                                            <textarea asp-for="ServiceDescription" class="form-control" rows="2"
+                                                      placeholder="Describe your logistics services" required></textarea>
+                                            <span asp-validation-for="ServiceDescription" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label asp-for="Password" class="form-label">Password *</label>
+                                            <div class="password-container">
+                                                <div class="input-icon">
+                                                    <i class="bi bi-lock"></i>
+                                                    <input asp-for="Password" type="password" class="form-control"
+                                                           id="userPassword" placeholder="Create password" required>
+                                                </div>
+                                                <button type="button" class="password-toggle" id="togglePassword">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </div>
+                                            <span asp-validation-for="Password" class="text-danger"></span>
+                                            <div class="form-text">Must be at least 8 characters</div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label asp-for="ConfirmPassword" class="form-label">Confirm Password *</label>
+                                            <div class="input-icon">
+                                                <i class="bi bi-lock"></i>
+                                                <input asp-for="ConfirmPassword" type="password" class="form-control"
+                                                       placeholder="Confirm password" required>
+                                            </div>
+                                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="col-12 mb-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                                                <label class="form-check-label" for="agreeTerms">
+                                                    I agree to the <a href="#" class="text-decoration-none">Terms of Service</a>
+                                                    and <a href="#" class="text-decoration-none">Privacy Policy</a>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary w-100 mb-3">Create Provider Account</button>
+                                </form>
+
+                                <div class="auth-switch">
+                                    Already have an account? <a asp-controller="Auth" asp-action="Login">Sign in</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6 d-none d-lg-block">
+                            <div class="auth-image">
+                                <div>
+                                    <a asp-controller="Home" asp-action="Index" class="text-center d-block">
+                                        <img class="logoLogin" src="~/images/logo.png" alt="Wasl Logo">
+                                    </a>
+                                    <h2 class="text-center">Join Wasl as a Provider</h2>
+                                    <p>Register as a logistics provider and grow your business</p>
+                                    <ul class="feature-list mt-4">
+                                        <li><i class="bi bi-check-lg"></i><span>Access shipment requests instantly</span></li>
+                                        <li><i class="bi bi-check-lg"></i><span>Submit competitive bids</span></li>
+                                        <li><i class="bi bi-check-lg"></i><span>Manage your contracts</span></li>
+                                        <li><i class="bi bi-check-lg"></i><span>Build your client base</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // KSA Cities data
+        const ksaCities = @Html.Raw(Json.Serialize(Wasl.Infrastructure.KSALocations.CitiesByRegion));
+
+        // Region-City dependency
+        const regionSelect = document.getElementById('providerRegion');
+        const citySelect = document.getElementById('providerCity');
+
+        regionSelect.addEventListener('change', function() {
+            const selectedRegion = this.value;
+            citySelect.innerHTML = '<option value="" selected disabled>Select city</option>';
+
+            if (selectedRegion && ksaCities[selectedRegion]) {
+                Object.entries(ksaCities[selectedRegion]).forEach(([key, city]) => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = city;
+                    citySelect.appendChild(option);
+                });
+            }
+        });
+
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const password = document.getElementById('userPassword');
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+        });
+
+        // Restore old values if validation failed
+        document.addEventListener('DOMContentLoaded', function() {
+            const oldRegion = '@Model?.ProviderRegion';
+            if (oldRegion) {
+                regionSelect.value = oldRegion;
+                regionSelect.dispatchEvent(new Event('change'));
+
+                setTimeout(() => {
+                    const oldCity = '@Model?.ProviderCity';
+                    if (oldCity) {
+                        citySelect.value = oldCity;
+                    }
+                }, 100);
+            }
+        });
+    </script>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }
+</body>
+</html>

@@ -1,0 +1,276 @@
+﻿@model Wasl.ViewModels.CompanyVMs.CompanyDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard - Wasl Logistics";
+}
+
+<div class="container-fluid">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-title-box text-white rounded-3 p-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3 class="mb-2">Welcome back, @Model.Company.CompanyName!</h3>
+                        <p class="mb-0 opacity-75">
+                            @if (Model.Stats.PendingBids > 0)
+                            {
+                                <text>You have @Model.Stats.PendingBids new bids to review and @Model.Stats.ActiveShipments active shipments.</text>
+                            }
+                            else
+                            {
+                                <text>You have @Model.Stats.ActiveShipments active shipments running smoothly.</text>
+                            }
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <a asp-controller="CompanyShipment" asp-action="Create" class="btn btn-light btn-lg">
+                            <i class="bi bi-plus-circle me-2"></i> New Shipment
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="stats-card card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="stats-icon primary mb-3">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <h3 class="text-primary mb-1">@Model.Stats.ActiveShipments</h3>
+                    <p class="text-muted mb-0">Active Shipments</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="stats-icon warning mb-3">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <h3 class="text-warning mb-1">@Model.Stats.PendingBids</h3>
+                    <p class="text-muted mb-0">Pending Bids</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="stats-icon info mb-3">
+                        <i class="bi bi-file-text"></i>
+                    </div>
+                    <h3 class="text-info mb-1">@Model.Stats.TotalContracts</h3>
+                    <p class="text-muted mb-0">Total Contracts</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="stats-icon secondary mb-3">
+                        <i class="bi bi-cash-coin"></i>
+                    </div>
+                    <h3 class="text-secondary mb-1">SAR @Model.Stats.TotalSpent.ToString("N0")</h3>
+                    <p class="text-muted mb-0">Total Spent</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Activities Row -->
+    <div class="row">
+        <!-- Spending Chart -->
+        <div class="col-xl-8 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bar-chart me-2"></i>
+                        Monthly Spending Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="spendingChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="col-xl-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-clock-history me-2"></i>
+                            Recent Activities
+                        </h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="activities-list">
+                        @if (Model.RecentActivities != null && Model.RecentActivities.Any())
+                        {
+                            @foreach (var activity in Model.RecentActivities)
+                            {
+                                <div class="activity-item d-flex align-items-start mb-3 pb-3 border-bottom">
+                                    <div class="activity-icon flex-shrink-0 me-3">
+                                        @if (activity.ActivityType == "shipment")
+                                        {
+                                            <i class="bi bi-truck text-primary"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-file-text text-success"></i>
+                                        }
+                                    </div>
+                                    <div class="activity-content flex-grow-1">
+                                        <h6 class="mb-1">@activity.ActivityTitle</h6>
+                                        <p class="text-muted mb-1 small">@activity.ActivityDescription</p>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>
+                                            @activity.ActivityDate.ToString("MMM dd, HH:mm")
+                                        </small>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-4">
+                                <i class="bi bi-inbox display-4 text-muted d-block mb-2"></i>
+                                <p class="text-muted mb-0">No recent activities</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .stats-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .stats-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+            }
+
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 1.5rem;
+        }
+
+            .stats-icon.primary {
+                background: rgba(13, 110, 253, 0.1);
+                color: #0d6efd;
+            }
+
+            .stats-icon.warning {
+                background: rgba(255, 193, 7, 0.1);
+                color: #ffc107;
+            }
+
+            .stats-icon.info {
+                background: rgba(13, 202, 240, 0.1);
+                color: #0dcaf0;
+            }
+
+            .stats-icon.secondary {
+                background: rgba(108, 117, 125, 0.1);
+                color: #6c757d;
+            }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            font-size: 1.1rem;
+        }
+
+        .activities-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none !important;
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var spendingOptions = {
+                series: [{
+                    name: 'Monthly Spending',
+                    data: @Html.Raw(Json.Serialize(Model.MonthlySpending.SpendingData))
+                }],
+                chart: {
+                    height: 350,
+                    type: 'area',
+                    toolbar: { show: true },
+                    zoom: { enabled: false }
+                },
+                colors: ['#df8224'],
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 3 },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.3,
+                        stops: [0, 90, 100]
+                    }
+                },
+                xaxis: {
+                    categories: @Html.Raw(Json.Serialize(Model.MonthlySpending.MonthLabels)),
+                    labels: { style: { colors: '#6c757d', fontSize: '12px' } }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function (value) {
+                            return 'SAR ' + value.toLocaleString();
+                        },
+                        style: { colors: '#6c757d', fontSize: '12px' }
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (value) {
+                            return 'SAR ' + value.toLocaleString();
+                        }
+                    }
+                },
+                grid: {
+                    borderColor: '#f8f9fa',
+                    strokeDashArray: 4,
+                    padding: { top: 0, right: 0, bottom: 0, left: 0 }
+                }
+            };
+
+            var spendingChart = new ApexCharts(document.querySelector("#spendingChart"), spendingOptions);
+            spendingChart.render();
+        });
+    </script>
+}

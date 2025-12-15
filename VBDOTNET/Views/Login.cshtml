@@ -1,0 +1,144 @@
+﻿@model Wasl.ViewModels.Auth.LoginViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Wasl Logistics Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/custom.css">
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="auth-container">
+                    <div class="row g-0">
+                        <div class="col-lg-6 d-none d-lg-block">
+                            <div class="auth-image">
+                                <div>
+                                    <a asp-controller="Home" asp-action="Index" class="text-center d-block">
+                                        <img class="logoLogin" src="~/images/logo.png" alt="Wasl Logo">
+                                    </a>
+                                    <h2>Welcome Back to Wasl</h2>
+                                    <p>Streamline your logistics operations with our platform</p>
+                                    <ul class="feature-list mt-4">
+                                        <li><i class="bi bi-check-lg"></i><span>Connect with trusted logistics providers</span></li>
+                                        <li><i class="bi bi-check-lg"></i><span>Manage shipments in real-time</span></li>
+                                        <li><i class="bi bi-check-lg"></i><span>Get competitive bids for your shipments</span></li>
+                                        <li><i class="bi bi-check-lg"></i><span>Track deliveries with live updates</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="auth-form">
+                                <div class="text-center mb-4 d-lg-none">
+                                    <a asp-controller="Home" asp-action="Index" class="logo text-primary">Wasl</a>
+                                    <h3 class="mt-2">Welcome Back</h3>
+                                </div>
+
+                                <h4 class="mb-4">Sign in to your account</h4>
+
+                                @if (TempData["SuccessMessage"] != null)
+                                {
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        @TempData["SuccessMessage"]
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                }
+
+                                @if (TempData["ErrorMessage"] != null)
+                                {
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        @TempData["ErrorMessage"]
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                }
+
+                                @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                                {
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <ul class="mb-0">
+                                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                            {
+                                                <li>@error.ErrorMessage</li>
+                                            }
+                                        </ul>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                }
+
+                                <form method="post" asp-controller="Auth" asp-action="Login" asp-route-returnUrl="@ViewBag.ReturnUrl">
+                                    @Html.AntiForgeryToken()
+
+                                    <div class="mb-3">
+                                        <label asp-for="Email" class="form-label">Email Address</label>
+                                        <div class="input-icon">
+                                            <i class="bi bi-envelope"></i>
+                                            <input asp-for="Email" type="email" class="form-control"
+                                                   placeholder="Enter your email" required>
+                                            <span asp-validation-for="Email" class="text-danger"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label asp-for="Password" class="form-label">Password</label>
+                                        <div class="password-container">
+                                            <div class="input-icon">
+                                                <i class="bi bi-lock"></i>
+                                                <input asp-for="Password" type="password" class="form-control"
+                                                       id="password" placeholder="Enter your password" required>
+                                            </div>
+                                            <button type="button" class="password-toggle" id="togglePassword">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <span asp-validation-for="Password" class="text-danger"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <div class="form-check">
+                                            <input asp-for="RememberMe" class="form-check-input" type="checkbox">
+                                            <label asp-for="RememberMe" class="form-check-label">Remember me</label>
+                                        </div>
+                                        <a asp-controller="Auth" asp-action="ForgotPassword" class="text-decoration-none">Forgot password?</a>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary w-100 mb-3">Sign In</button>
+                                </form>
+
+                                <div class="auth-switch">
+                                    Don't have an account?
+                                    <a asp-controller="Auth" asp-action="RegisterCompany">Sign up as Company</a> or
+                                    <a asp-controller="Auth" asp-action="RegisterProvider">Sign up as Provider</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const password = document.getElementById('password');
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+        });
+    </script>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }
+</body>
+</html>

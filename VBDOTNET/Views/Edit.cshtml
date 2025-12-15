@@ -1,0 +1,152 @@
+﻿@model Wasl.ViewModels.ProviderVMS.ProviderProfileViewModel
+@{
+    ViewData["Title"] = "Edit Profile - Wasl Logistics";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            @* @await Component.InvokeAsync("ProviderSidebar") *@
+            <partial name="_ProviderSidebar" />
+        </div>
+
+        <div class="col-lg-9">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-1">Edit Profile</h4>
+                            <p class="text-muted mb-0">Update your company information and settings</p>
+                        </div>
+                        <a asp-action="Show" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show">
+                    <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-building me-2"></i>Provider Information
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" asp-action="Update">
+                                @Html.AntiForgeryToken()
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="ProviderName" class="form-label">Provider Name *</label>
+                                        <input asp-for="ProviderName" class="form-control" required>
+                                        <span asp-validation-for="ProviderName" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="BusinessRegistrationNumber" class="form-label">Registration Number *</label>
+                                        <input asp-for="BusinessRegistrationNumber" class="form-control" required>
+                                        <span asp-validation-for="BusinessRegistrationNumber" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="ProviderEmail" class="form-label">Email *</label>
+                                        <input asp-for="ProviderEmail" type="email" class="form-control" required>
+                                        <span asp-validation-for="ProviderEmail" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="ProviderPhoneNumber" class="form-label">Phone *</label>
+                                        <input asp-for="ProviderPhoneNumber" class="form-control" required>
+                                        <span asp-validation-for="ProviderPhoneNumber" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <label asp-for="ProviderAddress" class="form-label">Address *</label>
+                                        <textarea asp-for="ProviderAddress" class="form-control" rows="3" required></textarea>
+                                        <span asp-validation-for="ProviderAddress" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="ProviderRegion" class="form-label">Region *</label>
+                                        <select asp-for="ProviderRegion" class="form-select" required>
+                                            <option value="">Select Region</option>
+                                            @foreach (var region in ViewBag.Regions as Dictionary<string, string>)
+                                            {
+                                                <option value="@region.Key">@region.Value</option>
+                                            }
+                                        </select>
+                                        <span asp-validation-for="ProviderRegion" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="ProviderCity" class="form-label">City *</label>
+                                        <select asp-for="ProviderCity" class="form-select" required>
+                                            <option value="">Select City</option>
+                                            @if (ViewBag.Cities != null)
+                                            {
+                                                @foreach (var city in ViewBag.Cities as Dictionary<string, string>)
+                                                {
+                                                    <option value="@city.Key">@city.Value</option>
+                                                }
+                                            }
+                                        </select>
+                                        <span asp-validation-for="ProviderCity" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-12 mb-4">
+                                        <label asp-for="ServiceDescription" class="form-label">Service Description *</label>
+                                        <textarea asp-for="ServiceDescription" class="form-control" rows="4" required></textarea>
+                                        <span asp-validation-for="ServiceDescription" class="text-danger"></span>
+                                        <div class="form-text">Max 1000 characters</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check-circle me-2"></i>Update Profile
+                                        </button>
+                                        <a asp-action="Show" class="btn btn-outline-secondary">Cancel</a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-shield-lock me-2"></i>Update Password
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" asp-action="UpdatePassword">
+                                @Html.AntiForgeryToken()
+                                <div class="mb-3">
+                                    <label for="CurrentPassword" class="form-label">Current Password *</label>
+                                    <input type="password" class="form-control" id="CurrentPassword" name="CurrentPassword" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="NewPassword" class="form-label">New Password *</label>
+                                    <input type="password" class="form-control" id="NewPassword" name="NewPassword" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="ConfirmPassword" class="form-label">Confirm Password *</label>
+                                    <input type="password" class="form-control" id="ConfirmPassword" name="ConfirmPassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-key me-2"></i>Update Password
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

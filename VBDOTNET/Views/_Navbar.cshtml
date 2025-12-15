@@ -1,0 +1,89 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Wasl.Infrastructure
+@using Wasl.Models
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white p-0 sticky-top shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" asp-controller="Front" asp-action="Index">
+            <img src="~/images/logo.png" alt="Wasl Logistics">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Front" ? "active" : "")"
+                       asp-controller="Front" asp-action="Index">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Front")#Features">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Front")#How">How It Works</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Shipments" ? "active" : "")"
+                       asp-controller="Front" asp-action="Shipments">Browse Shipments</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Front")#Footer">Contact</a>
+                </li>
+            </ul>
+
+            <div class="ms-lg-3 mt-3 mt-lg-0">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <!-- User Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button"
+                                id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-2"></i>
+                            @User.Identity.Name
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            @if (User.IsInRole(AppConstants.ROLE_PROVIDER))
+                            {
+                                <li>
+                                    <a class="dropdown-item" asp-controller="ProviderProfile" asp-action="Show">
+                                        <i class="bi bi-person me-2"></i>Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="ProviderBid" asp-action="Index">
+                                        <i class="bi bi-list-check me-2"></i>My Bids
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="ProviderContract" asp-action="Index">
+                                        <i class="bi bi-file-text me-2"></i>Contracts
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                            }
+                            <li>
+                                <form method="POST" asp-controller="Auth" asp-action="Logout" id="logout-form">
+                                    @Html.AntiForgeryToken()
+                                    <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                    </a>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <!-- Guest Links -->
+                    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+                    var isRegisterPage = currentAction != null && currentAction.StartsWith("Register");
+
+                    <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-primary me-2 @(ViewContext.RouteData.Values["action"]?.ToString() == "Login" ? "active" : "")">Login</a>
+                    <a asp-controller="Auth" asp-action="RegisterCompany" class="btn btn-primary @(isRegisterPage ? "active" : "")">Sign Up</a>
+                }
+            </div>
+        </div>
+    </div>
+</nav>

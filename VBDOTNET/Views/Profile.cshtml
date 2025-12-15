@@ -1,0 +1,172 @@
+﻿@model Wasl.ViewModels.CompanyVMs.CompanyProfileViewModel
+@{
+    ViewData["Title"] = "Company Profile - Wasl Logistics";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box d-flex align-items-center justify-content-between">
+                <h4 class="mb-0">Edit Profile Information</h4>
+                <div class="page-title-right">
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                        <i class="bi bi-trash"></i> Delete Account
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row d-flex justify-content-center mt-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary p-3 text-center">
+                    <h5 class="card-title text-white mb-0">Profile Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-controller="Company" asp-action="UpdateProfile">
+                        @Html.AntiForgeryToken()
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="CompanyName" class="form-label">Company Name <span class="text-danger">*</span></label>
+                                    <input asp-for="CompanyName" class="form-control" required />
+                                    <span asp-validation-for="CompanyName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="UserEmail" class="form-label">Email Address <span class="text-danger">*</span></label>
+                                    <input asp-for="UserEmail" type="email" class="form-control" required />
+                                    <span asp-validation-for="UserEmail" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="BusinessRegistrationNumber" class="form-label">Business Registration Number <span class="text-danger">*</span></label>
+                                    <input asp-for="BusinessRegistrationNumber" class="form-control" required />
+                                    <span asp-validation-for="BusinessRegistrationNumber" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="PhoneNumber" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                    <input asp-for="PhoneNumber" type="tel" class="form-control" required />
+                                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="CompanyRegion" class="form-label">Region <span class="text-danger">*</span></label>
+                                    <select asp-for="CompanyRegion" class="form-select" id="companyRegion" required>
+                                        <option value="" disabled>Select region</option>
+                                        @foreach (var region in Wasl.Infrastructure.KSALocations.Regions)
+                                        {
+                                            <option value="@region.Key">@region.Value</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="CompanyRegion" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="CompanyCity" class="form-label">City <span class="text-danger">*</span></label>
+                                    <select asp-for="CompanyCity" class="form-select" id="companyCity" required>
+                                        <option value="" disabled>Select city</option>
+                                    </select>
+                                    <span asp-validation-for="CompanyCity" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CompanyAddress" class="form-label">Business Address <span class="text-danger">*</span></label>
+                            <textarea asp-for="CompanyAddress" class="form-control" rows="3" required></textarea>
+                            <span asp-validation-for="CompanyAddress" class="text-danger"></span>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Warning:</strong> This action cannot be undone. All your data will be permanently deleted.
+                </div>
+                <form method="post" asp-controller="Company" asp-action="DeleteAccount" id="deleteAccountForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Enter your password to confirm:</label>
+                        <input type="password" class="form-control" id="password" name="password" required />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="deleteAccountForm" class="btn btn-danger">Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Region-City dependency
+        const ksaCities = @Html.Raw(Json.Serialize(Wasl.Infrastructure.KSALocations.CitiesByRegion));
+        const regionSelect = document.getElementById('companyRegion');
+        const citySelect = document.getElementById('companyCity');
+
+        regionSelect.addEventListener('change', function() {
+            const selectedRegion = this.value;
+            citySelect.innerHTML = '<option value="" disabled>Select city</option>';
+
+            if (selectedRegion && ksaCities[selectedRegion]) {
+                Object.entries(ksaCities[selectedRegion]).forEach(([key, city]) => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = city;
+                    citySelect.appendChild(option);
+                });
+            }
+        });
+
+        // Set initial cities based on current region
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentRegion = '@Model.CompanyRegion';
+            if (currentRegion && ksaCities[currentRegion]) {
+                Object.entries(ksaCities[currentRegion]).forEach(([key, city]) => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = city;
+                    if (key === '@Model.CompanyCity') {
+                        option.selected = true;
+                    }
+                    citySelect.appendChild(option);
+                });
+            }
+        });
+    </script>
+}
